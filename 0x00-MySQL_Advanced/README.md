@@ -61,3 +61,78 @@ This project focuses on advanced MySQL queries, including unique constraints, fi
   * Usage: `mysql -uroot -p < 10-relationships.sql`
   * Annotations: `ALTER TABLE child_table ADD CONSTRAINT fk_name FOREIGN KEY (column_name) REFERENCES parent_table(column_name);`
 
+* **11. No table for a meeting**
+  * [11-need_meeting.sql](./11-need_meeting.sql): SQL script (`.sql`) that creates a view `need_meeting` to list all students who have a score under 80 and either have no `last_meeting` date or their last meeting was more than one month ago.
+  * Usage:
+    ```bash
+    mysql -uroot -p < 11-need_meeting.sql
+    ```
+  * Example usage:
+    ```bash
+    mysql> SELECT * FROM need_meeting;
+    ```
+  * Annotations:
+    ```sql
+    CREATE VIEW need_meeting AS
+    SELECT name FROM students
+    WHERE score < 80 AND (last_meeting IS NULL OR last_meeting < CURDATE() - INTERVAL 1 MONTH);
+    ```
+
+* **12. Average weighted score**
+  * [100-average_weighted_score.sql](./100-average_weighted_score.sql): SQL script (`.sql`) that creates a stored procedure `ComputeAverageWeightedScoreForUser` to compute and store the average weighted score for a student based on their project scores.
+  * Usage:
+    ```bash
+    mysql -uroot -p < 100-average_weighted_score.sql
+    ```
+  * Example usage:
+    ```bash
+    mysql> CALL ComputeAverageWeightedScoreForUser(1); -- where 1 is the user_id
+    ```
+  * Annotations:
+    ```sql
+    CREATE PROCEDURE ComputeAverageWeightedScoreForUser(IN user_id INT)
+    BEGIN
+        DECLARE weighted_score FLOAT;
+        SELECT SUM(corrections.score * projects.weight) / SUM(projects.weight)
+        INTO weighted_score
+        FROM corrections
+        JOIN projects ON corrections.project_id = projects.id
+        WHERE corrections.user_id = user_id;
+        
+        UPDATE users SET average_score = weighted_score WHERE id = user_id;
+    END;
+    ```
+
+* **13. Average weighted score for all!**
+  * [101-average_weighted_score.sql](./101-average_weighted_score.sql): SQL script (`.sql`) that creates a stored procedure `ComputeAverageWeightedScoreForUsers` to compute and store the average weighted score for all students in the `users` table.
+  * Usage:
+    ```bash
+    mysql -uroot -p < 101-average_weighted_score.sql
+    ```
+  * Example usage:
+    ```bash
+    mysql> CALL ComputeAverageWeightedScoreForUsers();
+    ```
+  * Annotations:
+    ```sql
+    CREATE PROCEDURE ComputeAverageWeightedScoreForUsers()
+    BEGIN
+        DECLARE done INT DEFAULT 0;
+        DECLARE user_id INT;
+        DECLARE cur CURSOR FOR SELECT id FROM users;
+        DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+        
+        OPEN cur;
+        
+        read_loop: LOOP
+            FETCH cur INTO user_id;
+            IF done THEN
+                LEAVE read_loop;
+            END IF;
+            CALL ComputeAverageWeightedScoreForUser(user_id);
+        END LOOP;
+        
+        CLOSE cur;
+    END;
+    ```
+
