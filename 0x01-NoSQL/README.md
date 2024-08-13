@@ -1,6 +1,4 @@
-# Project Documentation
-
-## 0x01. NoSQL
+# 0x01. NoSQL
 
 This project focuses on interacting with MongoDB using both command-line scripts and Python functions. The tasks involve creating, reading, updating, and deleting documents, as well as managing databases and collections.
 
