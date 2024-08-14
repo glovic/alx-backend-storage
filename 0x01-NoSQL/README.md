@@ -54,3 +54,32 @@ This project focuses on interacting with MongoDB using both command-line scripts
   * Usage: `python3 9-main.py`
   * Annotations: `def insert_school(mongo_collection, **kwargs): return mongo_collection.insert_one(kwargs).inserted_id;`
 
+* **10. Change school topics**
+  * [10-update_topics.py](./10-update_topics.py): Python function to change all topics of a school document based on the `name`.
+  * Usage: `python3 10-main.py`
+  * Annotations: `def update_topics(mongo_collection, name, topics): return mongo_collection.update_many({"name": name}, {"$set": {"topics": topics}});`
+
+* **11. Where can I learn Python?**
+  * [11-schools_by_topic.py](./11-schools_by_topic.py): Python function that returns the list of school documents with a specific topic.
+  * Usage: `python3 11-main.py`
+  * Annotations: `def schools_by_topic(mongo_collection, topic): return mongo_collection.find({"topics": topic});`
+
+* **12. Log stats**
+  * [12-log_stats.py](./12-log_stats.py): Python script that provides some statistics about Nginx logs stored in MongoDB.
+  * Usage: `python3 12-log_stats.py`
+  * Annotations: `print the total number of logs and counts for each HTTP method.`
+
+* **13. Regex filter**
+  * [100-find](./100-find): Script to list all documents with names starting with "Holberton" in the `school` collection.
+  * Usage: `mongo my_db < 100-find`
+  * Annotations: `db.school.find({ name: /^Holberton/ });`
+
+* **14. Top students**
+  * [101-students.py](./101-students.py): Python function to return all students sorted by average score.
+  * Usage: `python3 101-main.py`
+  * Annotations: `def top_students(mongo_collection): return mongo_collection.aggregate([...]);`
+
+* **15. Log stats - new version**
+  * [102-log_stats.py](./102-log_stats.py): Improved version of the `12-log_stats.py` script, including the top 10 most present IPs in the `nginx` collection.
+  * Usage: `python3 102-log_stats.py`
+  * Annotations: `Prints top 10 most present IPs in logs.`
