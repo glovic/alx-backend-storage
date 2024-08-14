@@ -70,3 +70,9 @@ This project involves working with Redis to store, retrieve, and manipulate data
         Cache.store(*('bar',)) -> some-uuid
         Cache.store(*(42,)) -> some-uuid
         ```
+
+* **5. Implementing an expiring web cache and tracker**
+  * [web.py](./web.py): Python function `get_page` that fetches the HTML content of a given URL, tracks how many times the URL is accessed, and caches the result with an expiration time of 10 seconds.
+  * Usage: `python3 web.py`
+  * Annotations: `def get_page(url: str) -> str: Uses the requests module to get HTML content, tracks access count, and caches with a 10-second expiry.`
+"""
