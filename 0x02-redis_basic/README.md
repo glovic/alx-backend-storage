@@ -1,78 +1,93 @@
 # 0x02. Redis Basic
 
-This project involves working with Redis to store, retrieve, and manipulate data using Python. The tasks focus on understanding basic Redis operations, decorators, and managing call histories.
+This project explores the basics of working with Redis, focusing on how to use Redis for storing, retrieving, and manipulating data with Python.
 
 ## Tasks :page_with_curl:
 
 * **0. Writing strings to Redis**
-  * [exercise.py](./exercise.py): Implement a `Cache` class with methods to store data in Redis.
-    * **store**: Generates a random key and stores data in Redis.
-    * Usage:
-      ```python
-      from exercise import Cache
-      cache = Cache()
-      key = cache.store(b"hello")
-      ```
-    * Annotations:
-      * Stores data of types `str`, `bytes`, `int`, `float` in Redis and returns the key.
-      * Example: `local_redis.get(key) -> b'hello'`
+  * **[exercise.py](./exercise.py):** In this task, we create a `Cache` class that interacts with Redis to store arbitrary data types. The `store` method generates a random key and stores the input data under that key.
+  * **Usage:**
+    ```python
+    cache = Cache()
+    data = b"hello"
+    key = cache.store(data)
+    print(key)
+    print(cache._redis.get(key))
+    ```
+    **Output:**
+    ```python
+    b'hello'
+    ```
 
 * **1. Reading from Redis and recovering original type**
-  * [exercise.py](./exercise.py): Implement methods to retrieve data from Redis and convert it to its original format.
-    * **get**: Retrieves data using a key and optionally applies a function to convert it to the original type.
-    * **get_str**: Retrieves and decodes a string from Redis.
-    * **get_int**: Retrieves an integer from Redis.
-    * Usage:
-      ```python
-      cache = Cache()
-      cache.get(key, fn=lambda d: d.decode("utf-8"))
-      ```
-    * Annotations:
-      * Utilizes Redis to store and retrieve various data types, ensuring type consistency.
+  * **[exercise.py](./exercise.py):** We implement the `get` method in the `Cache` class that retrieves data from Redis and converts it back to its original type using a Callable. Additionally, we create `get_str` and `get_int` methods for automatic conversion.
+  * **Usage:**
+    ```python
+    cache = Cache()
+    key = cache.store("foo")
+    print(cache.get(key, fn=lambda d: d.decode('utf-8')))
+    ```
+    **Output:**
+    ```python
+    'foo'
+    ```
 
 * **2. Incrementing values**
-  * [exercise.py](./exercise.py): Implement a decorator to count how many times methods are called.
-    * **count_calls**: A decorator to count method calls.
-    * Usage:
-      ```python
-      cache.store(b"first")
-      cache.get(cache.store.__qualname__)  # -> b'1'
-      ```
-    * Annotations:
-      * Uses the Redis `INCR` command to keep track of method calls.
+  * **[exercise.py](./exercise.py):** This task introduces a `count_calls` decorator that tracks the number of times a method in the `Cache` class is called. The count is stored in Redis under the method's qualified name.
+  * **Usage:**
+    ```python
+    cache = Cache()
+    cache.store(b"first")
+    print(cache.get(cache.store.__qualname__))
+    ```
+    **Output:**
+    ```python
+    b'1'
+    ```
 
 * **3. Storing lists**
-  * [exercise.py](./exercise.py): Implement a decorator to store the history of inputs and outputs for a function.
-    * **call_history**: A decorator to store input and output history.
-    * Usage:
-      ```python
-      cache.store("first")
-      inputs = cache._redis.lrange("Cache.store:inputs", 0, -1)
-      outputs = cache._redis.lrange("Cache.store:outputs", 0, -1)
-      ```
-    * Annotations:
-      * Stores inputs and outputs of method calls as lists in Redis.
+  * **[exercise.py](./exercise.py):** We implement the `call_history` decorator that records the history of input parameters and outputs for a method in the `Cache` class. These histories are stored as lists in Redis.
+  * **Usage:**
+    ```python
+    cache = Cache()
+    key = cache.store("foo")
+    inputs = cache._redis.lrange(f"{cache.store.__qualname__}:inputs", 0, -1)
+    outputs = cache._redis.lrange(f"{cache.store.__qualname__}:outputs", 0, -1)
+    print(inputs, outputs)
+    ```
+    **Output:**
+    ```python
+    [b"('foo',)"] [b'key']
+    ```
 
 * **4. Retrieving lists**
-  * [exercise.py](./exercise.py): Implement a function to display the history of calls for a function.
-    * **replay**: Displays the call history for a decorated function.
-    * Usage:
-      ```python
-      cache.store("foo")
-      replay(cache.store)
-      ```
-    * Annotations:
-      * Uses Redis to retrieve and display the input and output history of method calls.
-      * Example Output:
-        ```
-        Cache.store was called 3 times:
-        Cache.store(*('foo',)) -> some-uuid
-        Cache.store(*('bar',)) -> some-uuid
-        Cache.store(*(42,)) -> some-uuid
-        ```
+  * **[exercise.py](./exercise.py):** We create a `replay` function that retrieves and displays the history of calls to a particular function using the keys generated in the previous task.
+  * **Usage:**
+    ```python
+    cache = Cache()
+    cache.store("foo")
+    cache.store("bar")
+    cache.store(42)
+    replay(cache.store)
+    ```
+    **Output:**
+    ```python
+    Cache.store was called 3 times:
+    Cache.store(*('foo',)) -> key1
+    Cache.store(*('bar',)) -> key2
+    Cache.store(*(42,)) -> key3
+    ```
 
 * **5. Implementing an expiring web cache and tracker**
-  * [web.py](./web.py): Python function `get_page` that fetches the HTML content of a given URL, tracks how many times the URL is accessed, and caches the result with an expiration time of 10 seconds.
-  * Usage: `python3 web.py`
-  * Annotations: `def get_page(url: str) -> str: Uses the requests module to get HTML content, tracks access count, and caches with a 10-second expiry.`
-"""
+  * **[web.py](./web.py):** In this advanced task, we implement a `get_page` function that fetches HTML content from a URL, tracks the number of accesses to the URL, and caches the result for 10 seconds.
+  * **Usage:**
+    ```python
+    html_content = get_page("http://example.com")
+    print(html_content)
+    ```
+    **Output:**
+    ```
+    HTML content of the page with caching applied
+    ```
+  * **Bonus:**
+    The `get_page` function can be enhanced with decorators for tracking and caching.
